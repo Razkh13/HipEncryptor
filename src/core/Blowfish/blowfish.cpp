@@ -1,28 +1,37 @@
-#include <iostream>
-#include <fstream>
-#include <iomanip>
+#include "blowfish.h"
+#include <algorithm>
 #include <cstdint>
 #include <vector>
-#include <cstring>
-#include <algorithm>
-#include <random>
 
-class Blowfish {
-private:
-    uint32_t P[18] = {
-        0x243F6A88, 0x85A308D3,
-        0x13198A2E, 0x03707344,
-        0xA4093822, 0x299F31D0,
-        0x082EFA98, 0xEC4E6C89,
-        0x452821E6, 0x38D01377,
-        0xBE5466CF, 0x34E90C6C,
-        0xC0AC29B7, 0xC97C50DD,
-        0x3F84D5B5, 0xB5470917,
+uint32_t Blowfish::F(uint32_t x)
+{
+    uint8_t a = (x >> 24) & 0xFF;
+    uint8_t b = (x >> 16) & 0xFF;
+    uint8_t c = (x >> 8)  & 0xFF;
+    uint8_t d = x & 0xFF;
+
+    uint32_t y = ((S[0][a] + S[1][b]) ^ S[2][c]) + S[3][d];
+    return y;
+}
+
+Blowfish::Blowfish(const std::vector<uint8_t>& key)
+{
+    keyExpansion(key);
+}
+
+void Blowfish::keyExpansion(const std::vector<uint8_t>& key)
+{
+    // Инициализация P-массива стандартными значениями
+    uint32_t P_init[18] = {
+        0x243F6A88, 0x85A308D3, 0x13198A2E, 0x03707344,
+        0xA4093822, 0x299F31D0, 0x082EFA98, 0xEC4E6C89,
+        0x452821E6, 0x38D01377, 0xBE5466CF, 0x34E90C6C,
+        0xC0AC29B7, 0xC97C50DD, 0x3F84D5B5, 0xB5470917,
         0x9216D5D9, 0x8979FB1B
     };
-
-    uint32_t S[4][256] = {
-
+    
+    // Инициализация S-боксов стандартными значениями
+    uint32_t S_init[4][256] = {
         // S-box 1
         {
             0xd1310ba6L, 0x98dfb5acL, 0x2ffd72dbL, 0xd01adfb7L, 0xb8e1afedL, 0x6a267e96L,
@@ -69,7 +78,6 @@ private:
             0xf296ec6bL, 0x2a0dd915L, 0xb6636521L, 0xe7b9f9b6L, 0xff34052eL, 0xc5855664L,
             0x53b02d5dL, 0xa99f8fa1L, 0x08ba4799L, 0x6e85076aL
         },
-
         // S-box 2
         {
             0x4b7a70e9L, 0xb5b32944L, 0xdb75092eL, 0xc4192623L, 0xad6ea6b0L, 0x49a7df7dL,
@@ -116,7 +124,6 @@ private:
             0x675fda79L, 0xe3674340L, 0xc5c43465L, 0x713e38d8L, 0x3d28f89eL, 0xf16dff20L,
             0x153e21e7L, 0x8fb03d4aL, 0xe6e39f2bL, 0xdb83adf7L
         },
-        
         // S-box 3
         {
             0xe93d5a68L, 0x948140f7L, 0xf64c261cL, 0x94692934L, 0x411520f7L, 0x7602d4f7L,
@@ -138,7 +145,7 @@ private:
             0x6b2395e0L, 0x333e92e1L, 0x3b240b62L, 0xeebeb922L, 0x85b2a20eL, 0xe6ba0d99L,
             0xde720c8cL, 0x2da2f728L, 0xd0127845L, 0x95b794fdL, 0x647d0862L, 0xe7ccf5f0L,
             0x5449a36fL, 0x877d48faL, 0xc39dfd27L, 0xf33e8d1eL, 0x0a476341L, 0x992eff74L,
-            0x3a6f6eabL, 0xf4f8fd37L, 0xa812dc60L, 0xa1ebddf8L, 0x991be14cL, 0xdb6e6b0dL,  
+            0x3a6f6eabL, 0xf4f8fd37L, 0xa812dc60L, 0xa1ebddf8L, 0x991be14cL, 0xdb6e6b0dL,
             0xc67b5510L, 0x6d672c37L, 0x2765d43bL, 0xdcd0e804L, 0xf1290dc7L, 0xcc00ffa3L,
             0xb5390f92L, 0x690fed0bL, 0x667b9ffbL, 0xcedb7d9cL, 0xa091cf0bL, 0xd9155ea3L,
             0xbb132f88L, 0x515bad24L, 0x7b9479bfL, 0x763bd6ebL, 0x37392eb3L, 0xcc115979L,
@@ -163,10 +170,9 @@ private:
             0xa28514d9L, 0x6c51133cL, 0x6fd5c7e7L, 0x56e14ec4L, 0x362abfceL, 0xddc6c837L,
             0xd79a3234L, 0x92638212L, 0x670efa8eL, 0x406000e0L
         },
-
         // S-box 4
         {
-            0x3a39ce37L, 0xd3faf5cfL, 0xabc27737L, 0x5ac52d1bL, 0x5cb0679eL, 0x4fa33742L,   
+            0x3a39ce37L, 0xd3faf5cfL, 0xabc27737L, 0x5ac52d1bL, 0x5cb0679eL, 0x4fa33742L,
             0xd3822740L, 0x99bc9bbeL, 0xd5118e9dL, 0xbf0f7315L, 0xd62d1c7eL, 0xc700c47bL,
             0xb78c1b6bL, 0x21a19045L, 0xb26eb1beL, 0x6a366eb4L, 0x5748ab2fL, 0xbc946e79L,
             0xc6a376d2L, 0x6549c2c8L, 0x530ff8eeL, 0x468dde7dL, 0xd5730a1dL, 0x4cd04dc6L,
@@ -209,90 +215,67 @@ private:
             0x85cbfe4eL, 0x8ae88dd8L, 0x7aaaf9b0L, 0x4cf9aa7eL, 0x1948c25cL, 0x02fb8a8cL,
             0x01c36ae4L, 0xd6ebe1f9L, 0x90d4f869L, 0xa65cdea0L, 0x3f09252dL, 0xc208e69fL,
             0xb74e6132L, 0xce77e25bL, 0x578fdfe3L, 0x3ac372e6L
-        },
+        }
     };
 
-    uint32_t F(uint32_t x)
-    {
-        uint8_t a = (x >> 24) & 0xFF;
-        uint8_t b = (x >> 16) & 0xFF;
-        uint8_t c = (x >> 8)  & 0xFF;
-        uint8_t d = x & 0xFF;
-
-        uint32_t y =
-            ((S[0][a] + S[1][b]) ^ S[2][c])
-            + S[3][d];
-
-        return y;
+    // Копируем стандартные значения в члены класса
+    for (int i = 0; i < 18; i++) {
+        P[i] = P_init[i];
+    }
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 256; j++) {
+            S[i][j] = S_init[i][j];
+        }
     }
 
-public:
-
-    Blowfish(const std::vector<uint8_t>& key)
-    {
-        keyExpansion(key);
-    }
-
-    void keyExpansion(const std::vector<uint8_t>& key)
-    {
-        if (key.empty()) return;
+    // XOR P-массива с ключом
+    if (!key.empty()) {
         size_t keyIndex = 0;
-
-        // XOR-им P-array с key
-        for (int i = 0; i < 18; i++)
-        {
+        for (int i = 0; i < 18; i++) {
             uint32_t data = 0;
-            for (int j = 0; j < 4; j++)
-            {
+            for (int j = 0; j < 4; j++) {
                 data = (data << 8) | key[keyIndex];
                 keyIndex = (keyIndex + 1) % key.size();
             }
             P[i] ^= data;
         }
+    }
 
-        // Шифруется 0 блок
-        uint32_t L = 0;
-        uint32_t R = 0;
+    // Шифруем нулевой блок и обновляем P-массив
+    uint32_t L = 0;
+    uint32_t R = 0;
+    for (int i = 0; i < 18; i += 2) {
+        encryptBlock(L, R);
+        P[i] = L;
+        P[i + 1] = R;
+    }
 
-        // Заполняется P-array
-        for (int i = 0; i < 18; i += 2)
-        {
+    // Обновляем S-боксы
+    for (int box = 0; box < 4; box++) {
+        for (int i = 0; i < 256; i += 2) {
             encryptBlock(L, R);
-            P[i] = L;
-            P[i + 1] = R;
-        }
-
-        // Инициализация S-box
-        for (int box = 0; box < 4; box++)
-        {
-            for (int i = 0; i < 256; i += 2)
-            {
-                encryptBlock(L, R);
-                S[box][i] = L;
-                S[box][i + 1] = R;
-            }
+            S[box][i] = L;
+            S[box][i + 1] = R;
         }
     }
+}
 
-    void encryptBlock(uint32_t& L, uint32_t& R)
-    {
-        L ^= P[0];
-        for (int i = 1; i <= 16; i += 2)
-        {
-            R ^= F(L) ^ P[i];
-            L ^= F(R) ^ P[i + 1];
-        }
-         R ^= P[17];
-        }
-
-    void decryptBlock(uint32_t& L, uint32_t& R)
-    {
-        R ^= P[17];
-        for (int i = 16; i >= 2; i -= 2)
-        {
-            L ^= F(R) ^ P[i];
-            R ^= F(L) ^ P[i - 1];
-        }
-        L ^= P[0];
+void Blowfish::encryptBlock(uint32_t& L, uint32_t& R)
+{
+    L ^= P[0];
+    for (int i = 1; i <= 16; i += 2) {
+        R ^= F(L) ^ P[i];
+        L ^= F(R) ^ P[i + 1];
     }
-};
+    R ^= P[17];
+}
+
+void Blowfish::decryptBlock(uint32_t& L, uint32_t& R)
+{
+    R ^= P[17];
+    for (int i = 16; i >= 2; i -= 2) {
+        L ^= F(R) ^ P[i];
+        R ^= F(L) ^ P[i - 1];
+    }
+    L ^= P[0];
+} 

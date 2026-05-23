@@ -1,7 +1,7 @@
 #include <vector>
 #include <cstdint>
 #include <cstring>
-#include "blowfish.cpp"
+#include "src/core/Blowfish/blowfish.h"
 
 extern "C"
 {
