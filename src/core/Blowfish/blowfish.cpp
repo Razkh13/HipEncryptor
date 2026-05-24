@@ -21,7 +21,6 @@ Blowfish::Blowfish(const std::vector<uint8_t>& key)
 
 void Blowfish::keyExpansion(const std::vector<uint8_t>& key)
 {
-    // Инициализация P-массива стандартными значениями
     uint32_t P_init[18] = {
         0x243F6A88, 0x85A308D3, 0x13198A2E, 0x03707344,
         0xA4093822, 0x299F31D0, 0x082EFA98, 0xEC4E6C89,
@@ -30,7 +29,6 @@ void Blowfish::keyExpansion(const std::vector<uint8_t>& key)
         0x9216D5D9, 0x8979FB1B
     };
     
-    // Инициализация S-боксов стандартными значениями
     uint32_t S_init[4][256] = {
         // S-box 1
         {
@@ -228,7 +226,7 @@ void Blowfish::keyExpansion(const std::vector<uint8_t>& key)
         }
     }
 
-    // XOR P-массива с ключом
+    // XOR-им P-массив с ключом
     if (!key.empty()) {
         size_t keyIndex = 0;
         for (int i = 0; i < 18; i++) {
