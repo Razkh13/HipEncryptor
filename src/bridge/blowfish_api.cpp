@@ -32,7 +32,6 @@ static bool validate_padding(const std::vector<uint8_t>& buffer) {
     if (padding == 0 || padding > 8) return false;
     if (padding > buffer.size()) return false;
     
-    // Проверяем, что все байты паддинга одинаковые
     for (size_t i = buffer.size() - padding; i < buffer.size(); i++) {
         if (buffer[i] != padding) return false;
     }
@@ -111,12 +110,12 @@ extern "C" int decrypt(ConstBuffer input, ConstBuffer key, MutBuffer* output) {
             in[i+7] = R & 0xFF;
         }
         
-        // (если невалиден — скорее всего неправильный ключ)
         if (!validate_padding(in)) {
-            return 9;  // Неправильный ключ или испорченные данные
+            return 9;
         }
         
         remove_padding(in);
+        
         output->size = in.size();
         output->data = new uint8_t[in.size()];
         if (!output->data) return 5;
@@ -127,4 +126,12 @@ extern "C" int decrypt(ConstBuffer input, ConstBuffer key, MutBuffer* output) {
     catch (...) {
         return 6;
     }
-} 
+}
+
+extern "C" const char* get_algorithm_name() {
+    return "Blowfish";
+}
+
+extern "C" size_t get_key_size() {
+    return 16;
+}

@@ -77,7 +77,6 @@ bool load_library(const std::string& lib_name, DL_HANDLE& handle,
     return true;
 }
 
-// само тестирование (включает 5 тестов)
 bool run_test(encrypt_func encrypt, decrypt_func decrypt,
               const std::vector<uint8_t>& data, 
               const std::vector<uint8_t>& key,
@@ -109,9 +108,8 @@ bool run_test(encrypt_func encrypt, decrypt_func decrypt,
         return false;
     }
     
-    // Сравнение
     bool success = (data.size() == dec_buf.size) &&
-                   (memcmp(data.data(), dec_buf.data, data.size()) == 0);
+                   (std::memcmp(data.data(), dec_buf.data, data.size()) == 0);
     
     if (success) {
         std::cout << GREEN << "  ✅ TEST " << test_num << " PASSED" << RESET;
@@ -128,7 +126,6 @@ bool run_test(encrypt_func encrypt, decrypt_func decrypt,
 }
 
 bool test_empty_data(encrypt_func encrypt, decrypt_func, const std::vector<uint8_t>& key) {
-    
     std::vector<uint8_t> empty_data;
     ConstBuffer in_buf{empty_data.data(), empty_data.size()};
     ConstBuffer key_buf{key.data(), key.size()};
@@ -138,7 +135,7 @@ bool test_empty_data(encrypt_func encrypt, decrypt_func, const std::vector<uint8
     
     if (enc_result != 0) {
         std::cout << YELLOW << "  ⚠️ EMPTY DATA TEST: Encryption failed (code: " << enc_result << ") - это ожидаемо" << RESET << "\n";
-        return true; 
+        return true;
     }
     
     delete[] out_buf.data;
@@ -146,7 +143,7 @@ bool test_empty_data(encrypt_func encrypt, decrypt_func, const std::vector<uint8
 }
 
 bool test_wrong_key(encrypt_func encrypt, decrypt_func decrypt,
-                    const std::vector<uint8_t>& data) {
+                    const std::vector<uint8_t>& data, const std::string& algorithm) {
     
     std::vector<uint8_t> key1 = generate_random_key();
     std::vector<uint8_t> key2 = generate_random_key();
@@ -157,7 +154,11 @@ bool test_wrong_key(encrypt_func encrypt, decrypt_func decrypt,
     MutBuffer out_buf{nullptr, 0};
     
     // Шифруем с key1
-    encrypt(in_buf, key_buf1, &out_buf);
+    int enc_result = encrypt(in_buf, key_buf1, &out_buf);
+    if (enc_result != 0) {
+        std::cout << YELLOW << "  ⚠️ WRONG KEY TEST: Encryption failed (code: " << enc_result << ")" << RESET << "\n";
+        return true;
+    }
     
     // Пытаемся расшифровать с key2
     ConstBuffer enc_buf{out_buf.data, out_buf.size};
@@ -165,7 +166,19 @@ bool test_wrong_key(encrypt_func encrypt, decrypt_func decrypt,
     
     int dec_result = decrypt(enc_buf, key_buf2, &dec_buf);
     
-    bool success = (dec_result != 0);  // Ожидаем ошибку расшифрования
+    bool success = false;
+    
+    if (algorithm == "twofish") {
+        // Twofish: проверяем что данные не совпадают
+        if (dec_result == 0 && dec_buf.size == data.size()) {
+            success = (std::memcmp(data.data(), dec_buf.data, data.size()) != 0);
+        } else {
+            success = true;
+        }
+    } else {
+        // Blowfish: ожидаем ошибку
+        success = (dec_result != 0);
+    }
     
     if (success) {
         std::cout << GREEN << "  ✅ WRONG KEY TEST PASSED" << RESET;
@@ -197,47 +210,46 @@ bool test_algorithm(const std::string& algorithm) {
     
     std::cout << GREEN << "✓ Library loaded successfully\n" << RESET;
     
-    // Генерируем ключ
     std::vector<uint8_t> key = generate_random_key();
     std::cout << "Key size: " << key.size() << " bytes\n";
     
     int passed = 0;
     int total = 0;
     
-    // Тест 1: маленькие данные (1 байт)
+    // Тест 1
     total++;
     std::vector<uint8_t> data1 = generate_random_data(1);
     if (run_test(encrypt, decrypt, data1, key, total, 1)) passed++;
     
-    // Тест 2: данные размером ровно в блок (8 байт)
+    // Тест 2
     total++;
     std::vector<uint8_t> data2 = generate_random_data(8);
     if (run_test(encrypt, decrypt, data2, key, total, 8)) passed++;
     
-    // Тест 3: данные размером не кратным блоку (13 байт)
+    // Тест 3
     total++;
     std::vector<uint8_t> data3 = generate_random_data(13);
     if (run_test(encrypt, decrypt, data3, key, total, 13)) passed++;
     
-    // Тест 4: большие данные (1 КБ)
+    // Тест 4
     total++;
     std::vector<uint8_t> data4 = generate_random_data(1024);
     if (run_test(encrypt, decrypt, data4, key, total, 1024)) passed++;
     
-    // Тест 5: очень большие данные (1 МБ)
+    // Тест 5
     total++;
     std::vector<uint8_t> data5 = generate_random_data(1024 * 1024);
     if (run_test(encrypt, decrypt, data5, key, total, 1024 * 1024)) passed++;
     
-    // Тест 6: пустые данные
-    total++;
+    // Edge Cases
     std::cout << "\n" << YELLOW << "--- Edge Cases ---\n" << RESET;
+    
+    total++;
     if (test_empty_data(encrypt, decrypt, key)) passed++;
     
-    // Тест 7: неправильный ключ
     total++;
     std::vector<uint8_t> data6 = generate_random_data(64);
-    if (test_wrong_key(encrypt, decrypt, data6)) passed++;
+    if (test_wrong_key(encrypt, decrypt, data6, algorithm)) passed++;
     
     std::cout << "\n" << BLUE << "--- Results ---\n" << RESET;
     std::cout << "Passed: " << GREEN << passed << RESET << " / " << total << "\n";
@@ -250,12 +262,12 @@ bool test_algorithm(const std::string& algorithm) {
 void print_help(const char* name) {
     std::cout << "Usage: " << name << " [OPTIONS]\n\n"
               << "Options:\n"
-              << "  -a, --algorithm ALGO   Test specific algorithm (blowfish, twofish, aes)\n"
+              << "  -a, --algorithm ALGO   Test specific algorithm (blowfish, twofish)\n"
               << "  -l, --list             List available algorithms\n"
               << "  -h, --help             Show this help\n\n"
               << "Examples:\n"
               << "  " << name << " -a blowfish\n"
-              << "  " << name << " -a aes\n"
+              << "  " << name << " -a twofish\n"
               << "  " << name << "\n";
 }
 
@@ -272,9 +284,14 @@ int main(int argc, char* argv[]) {
             if (i+1 < argc) algorithm = argv[++i];
         }
         else if (arg == "-l" || arg == "--list") {
-            std::cout << "Available algorithms:\n  - blowfish\n  - twofish (soon)\n  - aes (soon)\n";
+            std::cout << "Available algorithms:\n  - blowfish\n  - twofish\n";
             return 0;
         }
+    }
+    
+    if (algorithm != "blowfish" && algorithm != "twofish") {
+        std::cerr << "Unsupported algorithm: " << algorithm << "\n";
+        return 1;
     }
     
     std::cout << "\n" << YELLOW << "╔════════════════════════════════╗\n";

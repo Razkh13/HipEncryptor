@@ -1,7 +1,6 @@
 #include <vector>
 #include <cstdint>
 #include <cstring>
-#include <cstdio>
 #include "../core/Twofish/twofish.h"
 
 extern "C"
@@ -154,4 +153,12 @@ extern "C" int decrypt(ConstBuffer input, ConstBuffer key, MutBuffer* output) {
         twofishDestroy();
         return 6;
     }
+}
+
+extern "C" const char* get_algorithm_name() {
+    return "Twofish";
+}
+
+extern "C" size_t get_key_size() {
+    return 16;
 }

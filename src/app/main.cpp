@@ -12,14 +12,12 @@
     #define DL_LOAD(name) LoadLibraryA(name)
     #define DL_SYM(handle, name) GetProcAddress((HMODULE)handle, name)
     #define DL_CLOSE(handle) FreeLibrary((HMODULE)handle)
-    #define DL_ERROR() GetLastError()
 #else
     #include <dlfcn.h>
     #define DL_HANDLE void*
     #define DL_LOAD(name) dlopen(name, RTLD_LAZY)
     #define DL_SYM(handle, name) dlsym(handle, name)
     #define DL_CLOSE(handle) dlclose(handle)
-    #define DL_ERROR() dlerror()
 #endif
 
 struct ConstBuffer { const uint8_t* data; size_t size; };
@@ -27,6 +25,8 @@ struct MutBuffer { uint8_t* data; size_t size; };
 
 typedef int (*encrypt_func)(ConstBuffer, ConstBuffer, MutBuffer*);
 typedef int (*decrypt_func)(ConstBuffer, ConstBuffer, MutBuffer*);
+typedef const char* (*get_name_func)();
+typedef size_t (*get_keysize_func)();
 
 void error_exit(const std::string& msg, int code = 1) {
     std::cerr << "Error: " << msg << "\n";
@@ -68,9 +68,6 @@ void write_file(const std::string& path, const std::vector<uint8_t>& data) {
 std::vector<uint8_t> generate_key() {
     std::vector<uint8_t> key(16);
     std::random_device rd;
-    if (rd.entropy() == 0) {
-        std::cerr << "Warning: Random device has low entropy\n";
-    }
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 255);
     
@@ -81,7 +78,6 @@ std::vector<uint8_t> generate_key() {
 }
 
 std::string get_lib_name(const std::string& algorithm) {
-    // Поддерживаемые алгоритмы
     if (algorithm != "blowfish" && algorithm != "twofish") {
         error_exit("Unsupported algorithm: " + algorithm + ". Available: blowfish, twofish");
     }
@@ -116,7 +112,6 @@ int main(int argc, char* argv[]) {
     std::string output_file;
     std::string key_file;
     
-    // Парсинг аргументов
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         
@@ -149,7 +144,6 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    // Режим генерации ключа
     if (mode == "generate-key") {
         std::vector<uint8_t> key = generate_key();
         if (!output_file.empty()) {
@@ -162,7 +156,6 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     
-    // Проверка режима
     if (mode.empty()) {
         error_exit("Mode not specified. Use -m encrypt, -m decrypt, or -m generate-key");
     }
@@ -170,7 +163,6 @@ int main(int argc, char* argv[]) {
         error_exit("Invalid mode: " + mode + ". Use 'encrypt' or 'decrypt'");
     }
     
-    // Динамическая загрузка библиотеки
     std::string lib_name = get_lib_name(algorithm);
     
     std::cerr << "Loading library: " << lib_name << "\n";
@@ -185,9 +177,16 @@ int main(int argc, char* argv[]) {
     if (!encrypt) error_exit("Cannot find 'encrypt' function in " + lib_name);
     if (!decrypt) error_exit("Cannot find 'decrypt' function in " + lib_name);
     
+    get_name_func get_name = (get_name_func)DL_SYM(handle, "get_algorithm_name");
+    get_keysize_func get_keysize = (get_keysize_func)DL_SYM(handle, "get_key_size");
+    
+    if (get_name && get_keysize) {
+        std::cerr << "Algorithm: " << get_name() << "\n";
+        std::cerr << "Key size: " << get_keysize() << " bytes\n";
+    }
+    
     std::cerr << "Library loaded successfully\n";
     
-    // Чтение ключа
     std::vector<uint8_t> key;
     if (!key_file.empty()) {
         key = read_file(key_file);
@@ -201,7 +200,6 @@ int main(int argc, char* argv[]) {
     if (key.empty()) error_exit("Key is empty");
     std::cerr << "Key size: " << key.size() << " bytes\n";
     
-    // Чтение входных данных
     std::vector<uint8_t> input;
     if (!input_file.empty()) {
         input = read_file(input_file);
@@ -216,7 +214,6 @@ int main(int argc, char* argv[]) {
     if (input.empty()) error_exit("Input data is empty");
     std::cerr << "Input size: " << input.size() << " bytes\n";
     
-    // Выполнение операции
     ConstBuffer in_buf{input.data(), input.size()};
     ConstBuffer key_buf{key.data(), key.size()};
     MutBuffer out_buf{nullptr, 0};
@@ -231,9 +228,9 @@ int main(int argc, char* argv[]) {
     
     std::cerr << "Output size: " << out_buf.size << " bytes\n";
     
-    // Вывод результата
     if (!output_file.empty()) {
-        write_file(output_file, std::vector<uint8_t>(out_buf.data, out_buf.data + out_buf.size));
+        std::vector<uint8_t> output(out_buf.data, out_buf.data + out_buf.size);
+        write_file(output_file, output);
         std::cerr << "Result saved to: " << output_file << "\n";
     } else {
         std::cout.write(reinterpret_cast<char*>(out_buf.data), out_buf.size);
