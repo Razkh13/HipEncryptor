@@ -81,20 +81,21 @@ std::vector<uint8_t> generate_key() {
 }
 
 std::string get_lib_name(const std::string& algorithm) {
-    if (algorithm != "blowfish") {
-        error_exit("Unsupported algorithm: " + algorithm + ". Only 'blowfish' is available.");
+    // Поддерживаемые алгоритмы
+    if (algorithm != "blowfish" && algorithm != "twofish") {
+        error_exit("Unsupported algorithm: " + algorithm + ". Available: blowfish, twofish");
     }
 #ifdef _WIN32
-    return "blowfish.dll";
+    return algorithm + ".dll";
 #else
-    return "libblowfish.so";
+    return "lib" + algorithm + ".so";
 #endif
 }
 
 void print_help(const char* name) {
     std::cout << "Usage: " << name << " [OPTIONS]\n\n"
               << "Options:\n"
-              << "  -a, --algorithm ALGO   Algorithm (blowfish)\n"
+              << "  -a, --algorithm ALGO   Algorithm (blowfish, twofish)\n"
               << "  -m, --mode MODE        Mode: encrypt, decrypt, generate-key\n"
               << "  -i, --input FILE       Input file (reads from stdin if not specified)\n"
               << "  -o, --output FILE      Output file (writes to stdout if not specified)\n"
@@ -103,7 +104,9 @@ void print_help(const char* name) {
               << "Examples:\n"
               << "  " << name << " -a blowfish -m generate-key -o key.bin\n"
               << "  " << name << " -a blowfish -m encrypt -i file.txt -o file.enc -k key.bin\n"
-              << "  " << name << " -a blowfish -m decrypt -i file.enc -o file.txt -k key.bin\n";
+              << "  " << name << " -a blowfish -m decrypt -i file.enc -o file.txt -k key.bin\n"
+              << "  " << name << " -a twofish -m encrypt -i file.txt -o file.enc -k key.bin\n"
+              << "  " << name << " -a twofish -m decrypt -i file.enc -o file.txt -k key.bin\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -146,6 +149,7 @@ int main(int argc, char* argv[]) {
         }
     }
     
+    // Режим генерации ключа
     if (mode == "generate-key") {
         std::vector<uint8_t> key = generate_key();
         if (!output_file.empty()) {
@@ -158,6 +162,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     
+    // Проверка режима
     if (mode.empty()) {
         error_exit("Mode not specified. Use -m encrypt, -m decrypt, or -m generate-key");
     }
@@ -165,7 +170,7 @@ int main(int argc, char* argv[]) {
         error_exit("Invalid mode: " + mode + ". Use 'encrypt' or 'decrypt'");
     }
     
-    // динамические библиотеки
+    // Динамическая загрузка библиотеки
     std::string lib_name = get_lib_name(algorithm);
     
     std::cerr << "Loading library: " << lib_name << "\n";
@@ -182,6 +187,7 @@ int main(int argc, char* argv[]) {
     
     std::cerr << "Library loaded successfully\n";
     
+    // Чтение ключа
     std::vector<uint8_t> key;
     if (!key_file.empty()) {
         key = read_file(key_file);
@@ -195,6 +201,7 @@ int main(int argc, char* argv[]) {
     if (key.empty()) error_exit("Key is empty");
     std::cerr << "Key size: " << key.size() << " bytes\n";
     
+    // Чтение входных данных
     std::vector<uint8_t> input;
     if (!input_file.empty()) {
         input = read_file(input_file);
@@ -209,7 +216,7 @@ int main(int argc, char* argv[]) {
     if (input.empty()) error_exit("Input data is empty");
     std::cerr << "Input size: " << input.size() << " bytes\n";
     
-    // Вып. операций
+    // Выполнение операции
     ConstBuffer in_buf{input.data(), input.size()};
     ConstBuffer key_buf{key.data(), key.size()};
     MutBuffer out_buf{nullptr, 0};
@@ -224,6 +231,7 @@ int main(int argc, char* argv[]) {
     
     std::cerr << "Output size: " << out_buf.size << " bytes\n";
     
+    // Вывод результата
     if (!output_file.empty()) {
         write_file(output_file, std::vector<uint8_t>(out_buf.data, out_buf.data + out_buf.size));
         std::cerr << "Result saved to: " << output_file << "\n";
@@ -237,4 +245,4 @@ int main(int argc, char* argv[]) {
     
     std::cerr << "Operation completed successfully!\n";
     return 0;
-} 
+}
