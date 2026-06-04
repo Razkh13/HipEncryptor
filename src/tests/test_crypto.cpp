@@ -168,15 +168,13 @@ bool test_wrong_key(encrypt_func encrypt, decrypt_func decrypt,
     
     bool success = false;
     
-    if (algorithm == "twofish") {
-        // Twofish: проверяем что данные не совпадают
+    if (algorithm == "twofish" || algorithm == "camellia") {
         if (dec_result == 0 && dec_buf.size == data.size()) {
             success = (std::memcmp(data.data(), dec_buf.data, data.size()) != 0);
         } else {
             success = true;
         }
     } else {
-        // Blowfish: ожидаем ошибку
         success = (dec_result != 0);
     }
     
@@ -262,12 +260,13 @@ bool test_algorithm(const std::string& algorithm) {
 void print_help(const char* name) {
     std::cout << "Usage: " << name << " [OPTIONS]\n\n"
               << "Options:\n"
-              << "  -a, --algorithm ALGO   Test specific algorithm (blowfish, twofish)\n"
+              << "  -a, --algorithm ALGO   Test specific algorithm (blowfish, twofish, camellia)\n"
               << "  -l, --list             List available algorithms\n"
               << "  -h, --help             Show this help\n\n"
               << "Examples:\n"
               << "  " << name << " -a blowfish\n"
               << "  " << name << " -a twofish\n"
+              << "  " << name << " -a camellia\n"
               << "  " << name << "\n";
 }
 
@@ -284,12 +283,12 @@ int main(int argc, char* argv[]) {
             if (i+1 < argc) algorithm = argv[++i];
         }
         else if (arg == "-l" || arg == "--list") {
-            std::cout << "Available algorithms:\n  - blowfish\n  - twofish\n";
+            std::cout << "Available algorithms:\n  - blowfish\n  - twofish\n  - camellia\n";
             return 0;
         }
     }
     
-    if (algorithm != "blowfish" && algorithm != "twofish") {
+    if (algorithm != "blowfish" && algorithm != "twofish" && algorithm != "camellia") {
         std::cerr << "Unsupported algorithm: " << algorithm << "\n";
         return 1;
     }

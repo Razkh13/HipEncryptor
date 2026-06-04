@@ -216,7 +216,6 @@ void Blowfish::keyExpansion(const std::vector<uint8_t>& key)
         }
     };
 
-    // Копируем стандартные значения в члены класса
     for (int i = 0; i < 18; i++) {
         P[i] = P_init[i];
     }
@@ -226,7 +225,6 @@ void Blowfish::keyExpansion(const std::vector<uint8_t>& key)
         }
     }
 
-    // XOR-им P-массив с ключом
     if (!key.empty()) {
         size_t keyIndex = 0;
         for (int i = 0; i < 18; i++) {
@@ -239,7 +237,6 @@ void Blowfish::keyExpansion(const std::vector<uint8_t>& key)
         }
     }
 
-    // Шифруем нулевой блок и обновляем P-массив
     uint32_t L = 0;
     uint32_t R = 0;
     for (int i = 0; i < 18; i += 2) {
@@ -248,7 +245,6 @@ void Blowfish::keyExpansion(const std::vector<uint8_t>& key)
         P[i + 1] = R;
     }
 
-    // Обновляем S-боксы
     for (int box = 0; box < 4; box++) {
         for (int i = 0; i < 256; i += 2) {
             encryptBlock(L, R);

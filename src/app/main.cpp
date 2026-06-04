@@ -78,8 +78,8 @@ std::vector<uint8_t> generate_key() {
 }
 
 std::string get_lib_name(const std::string& algorithm) {
-    if (algorithm != "blowfish" && algorithm != "twofish") {
-        error_exit("Unsupported algorithm: " + algorithm + ". Available: blowfish, twofish");
+    if (algorithm != "blowfish" && algorithm != "twofish" && algorithm != "camellia") {
+        error_exit("Unsupported algorithm: " + algorithm + ". Available: blowfish, twofish, camellia");
     }
 #ifdef _WIN32
     return algorithm + ".dll";
@@ -91,7 +91,7 @@ std::string get_lib_name(const std::string& algorithm) {
 void print_help(const char* name) {
     std::cout << "Usage: " << name << " [OPTIONS]\n\n"
               << "Options:\n"
-              << "  -a, --algorithm ALGO   Algorithm (blowfish, twofish)\n"
+              << "  -a, --algorithm ALGO   Algorithm (blowfish, twofish, camellia)\n"
               << "  -m, --mode MODE        Mode: encrypt, decrypt, generate-key\n"
               << "  -i, --input FILE       Input file (reads from stdin if not specified)\n"
               << "  -o, --output FILE      Output file (writes to stdout if not specified)\n"
@@ -99,10 +99,14 @@ void print_help(const char* name) {
               << "  -h, --help             Show this help\n\n"
               << "Examples:\n"
               << "  " << name << " -a blowfish -m generate-key -o key.bin\n"
+              << "  " << name << " -a twofish -m generate-key -o key.bin\n"
+              << "  " << name << " -a camellia -m generate-key -o key.bin\n"
               << "  " << name << " -a blowfish -m encrypt -i file.txt -o file.enc -k key.bin\n"
               << "  " << name << " -a blowfish -m decrypt -i file.enc -o file.txt -k key.bin\n"
               << "  " << name << " -a twofish -m encrypt -i file.txt -o file.enc -k key.bin\n"
-              << "  " << name << " -a twofish -m decrypt -i file.enc -o file.txt -k key.bin\n";
+              << "  " << name << " -a twofish -m decrypt -i file.enc -o file.txt -k key.bin\n"
+              << "  " << name << " -a camellia -m encrypt -i file.txt -o file.enc -k key.bin\n"
+              << "  " << name << " -a camellia -m decrypt -i file.enc -o file.txt -k key.bin\n";
 }
 
 int main(int argc, char* argv[]) {
