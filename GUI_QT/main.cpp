@@ -3,6 +3,7 @@
 #include <QLabel>
 #include <QFontDatabase>
 #include <QDebug>
+#include <QWindow>
 #include <QScreen>
 #include <QRadioButton>
 #include <QButtonGroup>
@@ -16,6 +17,8 @@
 #include <QDateTime>
 #include <QPainter>
 #include <QGroupBox>
+#include <QGraphicsOpacityEffect>
+#include <QPropertyAnimation> 
 
 class RoundedLineEdit : public QLineEdit
 {
@@ -24,16 +27,22 @@ public:
     {
         setStyleSheet(
             "QLineEdit {"
-            "   background-color: rgba(255,255,255,0.9);"
-            "   border: 2px solid #A8E6FF;"
-            "   border-radius: 13px;"
-            "   padding: 8px 12px;"
+            "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+            "       stop:0 rgba(255, 255, 255, 0.15),"
+            "       stop:1 rgba(255, 255, 255, 0.05));"
+            "   border: 1px solid rgba(255, 255, 255, 0.3);"
+            "   outline: 1px solid rgba(255, 255, 255, 0.1);"
+            "   border-radius: 18px;"
+            "   color: black;"
             "   font-size: 13px;"
+            "   padding: 8px 12px;"
             "   min-width: 280px;"
             "}"
             "QLineEdit:focus {"
-            "   border: 2px solid #001020;"
-            "   background-color: white;"
+            "   border: 1px solid rgba(255, 255, 255, 0.6);"
+            "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+            "       stop:0 rgba(255, 255, 255, 0.25),"
+            "       stop:1 rgba(255, 255, 255, 0.1));"
             "}"
         );
         setMinimumWidth(280);
@@ -50,9 +59,12 @@ protected:
     void paintEvent(QPaintEvent* event) override
     {
         QPainter painter(this);
+        
         QLinearGradient gradient(0, 0, width(), height());
         gradient.setColorAt(0, QColor(0xA8, 0xE6, 0xFF));
+        gradient.setColorAt(0.5, QColor(0x54, 0x7B, 0x8F));   // промежуточный
         gradient.setColorAt(1, QColor(0x00, 0x10, 0x20));
+        
         painter.fillRect(rect(), gradient);
         QWidget::paintEvent(event);
     }
@@ -62,17 +74,16 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    QString fontPath = "/home/zaharov/programming/qt_test/NeutralFace.otf";
+    QString fontPath = "/home/zaharov/Загрузки/Rodondo RUS/RodondoRUS-Regular_0.ttf";
     int fontId = QFontDatabase::addApplicationFont(fontPath);
     
-    QString fontFamily = "Arial";
+    QString fontFamily = "/home/zaharov/Загрузки/Rodondo RUS/RodondoRUS-Regular_0.ttf";
     if (fontId != -1) {
         QStringList families = QFontDatabase::applicationFontFamilies(fontId);
         if (!families.isEmpty()) {
             fontFamily = families.first();
         }
     }
-
     QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
     int screenW = screenGeometry.width();
     int screenH = screenGeometry.height();
@@ -89,45 +100,59 @@ int main(int argc, char *argv[])
     QVBoxLayout* mainLayout = new QVBoxLayout(&window);
     mainLayout->setAlignment(Qt::AlignTop);
     mainLayout->setSpacing(14);
-    mainLayout->setContentsMargins(28, 18, 28, 18);
+    mainLayout->setContentsMargins(28, 18, 40, 40);
 
     mainLayout->addSpacing(18);
-    
-    QLabel* title = new QLabel();
-    title->setAlignment(Qt::AlignCenter);
-    
-    QString htmlText = QString(
-        "<html><center>"
-        "<span style='font-family: %1; font-size: 42px; font-weight: bold; color: #06294a;'>"
-        "<span style='font-size: 60px;'>H</span>"
-        "ip"
-        "<span style='font-size: 60px;'>E</span>"
-        "ncryptor"
-        "</span>"
-        "</center></html>"
-    ).arg(fontFamily);
-    
-    title->setText(htmlText);
-    mainLayout->addWidget(title);
 
-    QLabel* algoLabel = new QLabel("Выберите шифр:");
-    QFont labelFont(fontFamily, 17, QFont::Bold);
+QLabel* title = new QLabel();
+title->setAlignment(Qt::AlignCenter);
+
+QString htmlText = QString(
+    "<html><center>"
+    "<span style='font-family: %1; font-size: 60px; font-weight: bold; color: #06294a; letter-spacing: 2px;'>"
+    "<span style='font-size: 85px;'>H</span>"
+    "ip"
+    "<span style='font-size: 85px;'>E</span>"
+    "ncryptor"
+    "</span>"
+    "</center></html>"
+).arg(fontFamily);
+
+title->setText(htmlText);
+mainLayout->addWidget(title);
+
+    // ===== КОНТЕЙНЕР ДЛЯ ВЫБОРА ШИФРА =====
+    QWidget* algoContainer = new QWidget();
+    QVBoxLayout* algoContainerLayout = new QVBoxLayout(algoContainer);
+    algoContainerLayout->setAlignment(Qt::AlignCenter);
+    algoContainerLayout->setSpacing(10);
+    
+    QLabel* algoLabel = new QLabel("Укажите шифр для work");
+    QFont labelFont(fontFamily, 20, QFont::Bold);
     algoLabel->setFont(labelFont);
     algoLabel->setAlignment(Qt::AlignCenter);
-    algoLabel->setStyleSheet("color: #06294a; margin-bottom: 8px;");
-    mainLayout->addWidget(algoLabel);
-    mainLayout->addSpacing(10);
-
+    algoLabel->setStyleSheet(
+    "color: #06294a;"
+    "letter-spacing: 2px;"
+    "padding: 5px 50px;"   
+    "min-width: 500px;" 
+    "min-height: 45px;"  
+    );
+    algoContainerLayout->addWidget(algoLabel);
+    algoContainer->setStyleSheet("border: none; background: transparent;");
+    algoLabel->setMinimumHeight(45);   
+    algoLabel->setMinimumWidth(450);
+    
     QWidget* radioContainer = new QWidget();
     QHBoxLayout* radioLayout = new QHBoxLayout(radioContainer);
     radioLayout->setAlignment(Qt::AlignCenter);
-    radioLayout->setSpacing(45);
+    radioLayout->setSpacing(55);
 
     QRadioButton* rbBlowfish = new QRadioButton("Blowfish");
     QRadioButton* rbTwofish = new QRadioButton("Twofish");
     QRadioButton* rbCamellia = new QRadioButton("Camellia");
 
-    QFont radioFont("Arial", 18, QFont::Normal);
+    QFont radioFont(fontFamily, 18, QFont::Normal);
     rbBlowfish->setFont(radioFont);
     rbTwofish->setFont(radioFont);
     rbCamellia->setFont(radioFont);
@@ -135,10 +160,11 @@ int main(int argc, char *argv[])
     QString radioStyle = 
         "QRadioButton { "
         "   color: #06294a; "
-        "   spacing: 14px; "
-        "   padding: 0px; "
-        "   margin: 0px; "
-        "   outline: none; "
+        "   spacing: 2px; "           
+        "   min-height: 27px; "
+        "   min-width: 100px; "
+        "   padding: 4px; "
+        "   letter-spacing: 2px;"
         "}"
         "QRadioButton:hover { "
         "   color: #001020; "
@@ -165,10 +191,14 @@ int main(int argc, char *argv[])
     radioLayout->addWidget(rbBlowfish);
     radioLayout->addWidget(rbTwofish);
     radioLayout->addWidget(rbCamellia);
-    mainLayout->addWidget(radioContainer);
-    mainLayout->addSpacing(8);
+    algoContainerLayout->addWidget(radioContainer);
+    
+    mainLayout->addWidget(algoContainer, 0, Qt::AlignCenter);
+    mainLayout->addSpacing(0);
 
-    QGroupBox* encryptGroup = new QGroupBox("🔒 ШИФРОВАНИЕ");
+    QGroupBox* encryptGroup = new QGroupBox("ШИФРОВАНИЕ");
+    QFont groupFont("/home/zaharov/programming/HipEncryptor/GUI_QT/AKTIFO-A-EXTRABOLD_0.TTF", 14, QFont::Bold);  // название, размер, жирность
+    encryptGroup->setFont(groupFont);
     encryptGroup->setStyleSheet(
         "QGroupBox {"
         "   color: white;"
@@ -176,7 +206,7 @@ int main(int argc, char *argv[])
         "   font-size: 14px;"
         "   border: 2px solid #A8E6FF;"
         "   border-radius: 14px;"
-        "   margin-top: 14px;"
+        "   margin-top: 8px;"
         "   padding-top: 14px;"
         "   outline: none; "
         "}"
@@ -222,7 +252,9 @@ int main(int argc, char *argv[])
     
     mainLayout->addWidget(encryptGroup);
 
-    QGroupBox* decryptGroup = new QGroupBox("🔓 РАСШИФРОВАНИЕ");
+    QGroupBox* decryptGroup = new QGroupBox("РАСШИФРОВАНИЕ");
+    QFont decryptFont("/home/zaharov/programming/HipEncryptor/GUI_QT/AKTIFO-A-EXTRABOLD_0.TTF", 14, QFont::Bold);  // название, размер, жирность
+    decryptGroup->setFont(decryptFont);
     decryptGroup->setStyleSheet(
         "QGroupBox {"
         "   color: white;"
@@ -230,7 +262,7 @@ int main(int argc, char *argv[])
         "   font-size: 14px;"
         "   border: 2px solid #A8E6FF;"
         "   border-radius: 14px;"
-        "   margin-top: 14px;"
+        "   margin-top: 8px;"
         "   padding-top: 14px;"
         "}"
         "QGroupBox::title {"
@@ -276,6 +308,8 @@ int main(int argc, char *argv[])
     mainLayout->addWidget(decryptGroup);
 
     QGroupBox* keyGroup = new QGroupBox("КЛЮЧ");
+    QFont keyFont("/home/zaharov/programming/HipEncryptor/GUI_QT/AKTIFO-A-EXTRABOLD_0.TTF", 14, QFont::Bold);  // название, размер, жирность
+    keyGroup->setFont(keyFont);
     keyGroup->setStyleSheet(
         "QGroupBox {"
         "   color: white;"
@@ -283,7 +317,7 @@ int main(int argc, char *argv[])
         "   font-size: 14px;"
         "   border: 2px solid #A8E6FF;"
         "   border-radius: 14px;"
-        "   margin-top: 14px;"
+        "   margin-top: 8px;"
         "   padding-top: 14px;"
         "}"
         "QGroupBox::title {"
@@ -356,7 +390,7 @@ int main(int argc, char *argv[])
 
     QTextEdit* logEdit = new QTextEdit();
     logEdit->setReadOnly(true);
-    logEdit->setMaximumHeight(100);
+    logEdit->setMaximumHeight(150);
     logEdit->setStyleSheet(
         "QTextEdit {"
         "   background-color: rgba(0,16,32,0.8);"
@@ -364,7 +398,7 @@ int main(int argc, char *argv[])
         "   border: 1px solid #A8E6FF;"
         "   border-radius: 11px;"
         "   font-family: monospace;"
-        "   font-size: 11px;"
+        "   font-size: 15px;"
         "   padding: 9px;"
         "}"
     );
@@ -372,7 +406,6 @@ int main(int argc, char *argv[])
 
     //Обработчик
     QString projectPath = "/home/zaharov/programming/HipEncryptor";
-    
     auto appendLog = [&](const QString& text) {
         QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss");
         logEdit->append(QString("[%1] %2").arg(timestamp, text));

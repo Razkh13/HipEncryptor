@@ -99,14 +99,8 @@ void print_help(const char* name) {
               << "  -h, --help             Show this help\n\n"
               << "Examples:\n"
               << "  " << name << " -a blowfish -m generate-key -o key.bin\n"
-              << "  " << name << " -a twofish -m generate-key -o key.bin\n"
-              << "  " << name << " -a camellia -m generate-key -o key.bin\n"
               << "  " << name << " -a blowfish -m encrypt -i file.txt -o file.enc -k key.bin\n"
-              << "  " << name << " -a blowfish -m decrypt -i file.enc -o file.txt -k key.bin\n"
-              << "  " << name << " -a twofish -m encrypt -i file.txt -o file.enc -k key.bin\n"
-              << "  " << name << " -a twofish -m decrypt -i file.enc -o file.txt -k key.bin\n"
-              << "  " << name << " -a camellia -m encrypt -i file.txt -o file.enc -k key.bin\n"
-              << "  " << name << " -a camellia -m decrypt -i file.enc -o file.txt -k key.bin\n";
+              << "  " << name << " -a blowfish -m decrypt -i file.enc -o file.txt -k key.bin\n";
 }
 
 int main(int argc, char* argv[]) {

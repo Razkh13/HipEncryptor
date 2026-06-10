@@ -304,14 +304,23 @@ CMakeFiles/gui.dir/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtextstream.h \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/qset.h \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcontiguouscache.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtGui/QWindow \
+ /usr/include/x86_64-linux-gnu/qt5/QtGui/qwindow.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/QObject \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/qobject.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/QEvent \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/qcoreevent.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/QMargins \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/qmargins.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/QRect \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/qrect.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtGui/qsurface.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtGui/qsurfaceformat.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtGui/qicon.h \
  /usr/include/x86_64-linux-gnu/qt5/QtGui/QScreen \
  /usr/include/x86_64-linux-gnu/qt5/QtGui/qscreen.h \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/QList \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlist.h \
- /usr/include/x86_64-linux-gnu/qt5/QtCore/QObject \
- /usr/include/x86_64-linux-gnu/qt5/QtCore/qobject.h \
- /usr/include/x86_64-linux-gnu/qt5/QtCore/QRect \
- /usr/include/x86_64-linux-gnu/qt5/QtCore/qrect.h \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/QSize \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsize.h \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/QSizeF \
@@ -320,7 +329,6 @@ CMakeFiles/gui.dir/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QRadioButton \
  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qradiobutton.h \
  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractbutton.h \
- /usr/include/x86_64-linux-gnu/qt5/QtGui/qicon.h \
  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QButtonGroup \
  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qbuttongroup.h \
  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QVBoxLayout \
@@ -357,4 +365,11 @@ CMakeFiles/gui.dir/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt5/QtGui/QPainter \
  /usr/include/x86_64-linux-gnu/qt5/QtGui/qpainter.h \
  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QGroupBox \
- /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qgroupbox.h
+ /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qgroupbox.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QGraphicsOpacityEffect \
+ /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qgraphicseffect.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/QPropertyAnimation \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/qpropertyanimation.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/qvariantanimation.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/qeasingcurve.h \
+ /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractanimation.h

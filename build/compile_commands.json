@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/zaharov/programming/HipEncryptor/build",
+  "command": "/usr/bin/g++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -g -std=gnu++17 -fPIC -o CMakeFiles/gui.dir/main.cpp.o -c /home/zaharov/programming/HipEncryptor/GUI_QT/main.cpp",
+  "file": "/home/zaharov/programming/HipEncryptor/GUI_QT/main.cpp",
+  "output": "CMakeFiles/gui.dir/main.cpp.o"
+}
+]
