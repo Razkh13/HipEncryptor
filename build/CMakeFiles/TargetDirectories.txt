@@ -1,3 +1,0 @@
-/home/zaharov/programming/HipEncryptor/build/CMakeFiles/gui.dir
-/home/zaharov/programming/HipEncryptor/build/CMakeFiles/edit_cache.dir
-/home/zaharov/programming/HipEncryptor/build/CMakeFiles/rebuild_cache.dir

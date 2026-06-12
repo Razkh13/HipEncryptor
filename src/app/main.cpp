@@ -104,6 +104,15 @@ void print_help(const char* name) {
 }
 
 int main(int argc, char* argv[]) {
+    if (argc == 1) {
+    #ifdef _WIN32
+        system("GUI_QT/build/gui.exe");
+    #else
+        system("GUI_QT/build/./gui");
+    #endif
+    return 0;
+    }
+
     std::string algorithm = "blowfish";
     std::string mode;
     std::string input_file;
